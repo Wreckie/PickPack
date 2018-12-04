@@ -6,6 +6,9 @@ window.addEventListener("load", RunGame);
             var GAME_WIDTH = 1200;
             var GAME_HEIGHT = 1200;
 
+            var numImages = 0;
+            var imagesLoaded = 0;
+
             //store sprites here
             var sprites = {};
 
@@ -691,7 +694,6 @@ window.addEventListener("load", RunGame);
             function Load()
             {
                 //static UI elements
-                sprites.gametitle       = new Image();
                 sprites.rucksack        = new Image();
                 sprites.box             = new Image();
                 sprites.equipmentbar    = new Image();
@@ -702,7 +704,18 @@ window.addEventListener("load", RunGame);
                 sprites.endgameU        = new Image();
                 sprites.endgameH        = new Image();
                 sprites.gameover        = new Image();
-                sprites.gametitle.src       = 'sprites/gametitle.png';
+
+                sprites.rucksack.addEventListener("load", ImageLoaded);
+                sprites.box.addEventListener("load", ImageLoaded);             
+                sprites.equipmentbar.addEventListener("load", ImageLoaded);    
+                sprites.accessoriesbar.addEventListener("load", ImageLoaded);  
+                sprites.suppliesbar.addEventListener("load", ImageLoaded);     
+                sprites.skipitemsU.addEventListener("load", ImageLoaded);      
+                sprites.skipitemsH.addEventListener("load", ImageLoaded);      
+                sprites.endgameU.addEventListener("load", ImageLoaded);        
+                sprites.endgameH.addEventListener("load", ImageLoaded);        
+                sprites.gameover.addEventListener("load", ImageLoaded);        
+
                 sprites.rucksack.src        = 'sprites/rucksack.png';
                 sprites.box.src             = 'sprites/box.png';
                 sprites.equipmentbar.src    = 'sprites/EquipmentBar.png';
@@ -719,6 +732,11 @@ window.addEventListener("load", RunGame);
                 sprites.tileU = new Image();
                 sprites.tileC = new Image();
                 sprites.tileD = new Image();
+
+                sprites.tileU.addEventListener("load", ImageLoaded);
+                sprites.tileC.addEventListener("load", ImageLoaded);
+                sprites.tileD.addEventListener("load", ImageLoaded);
+
                 sprites.tileU.src = 'sprites/tileU.png';
                 sprites.tileC.src = 'sprites/tileC.png';
                 sprites.tileD.src = 'sprites/tileD.png';
@@ -730,6 +748,13 @@ window.addEventListener("load", RunGame);
                 sprites.teepack     = new Image();
                 sprites.teebag      = new Image();
                 sprites.scorecards  = new Image();
+
+                sprites.ball.addEventListener("load", ImageLoaded);
+                sprites.ballpackm.addEventListener("load", ImageLoaded);
+                sprites.ballpackl.addEventListener("load", ImageLoaded);
+                sprites.teepack.addEventListener("load", ImageLoaded);
+                sprites.teebag.addEventListener("load", ImageLoaded);
+                sprites.scorecards.addEventListener("load", ImageLoaded);
 
                 sprites.ball.src        = 'sprites/ball.png';
                 sprites.ballpackm.src   = 'sprites/ballpackm.png';
@@ -746,6 +771,13 @@ window.addEventListener("load", RunGame);
                 sprites.bar             = new Image();
                 sprites.sandwich        = new Image();
 
+                sprites.waterbottles.addEventListener("load", ImageLoaded);
+                sprites.waterbottlel.addEventListener("load", ImageLoaded);
+                sprites.banana.addEventListener("load", ImageLoaded);
+                sprites.orange.addEventListener("load", ImageLoaded);
+                sprites.bar.addEventListener("load", ImageLoaded);
+                sprites.sandwich.addEventListener("load", ImageLoaded);
+
                 sprites.waterbottles.src    = 'sprites/waterbottles.png';
                 sprites.waterbottlel.src    = 'sprites/waterbottlel.png';
                 sprites.banana.src          = 'sprites/banana.png';
@@ -761,14 +793,35 @@ window.addEventListener("load", RunGame);
                 sprites.glove       = new Image();
                 sprites.shoes       = new Image();
 
+                sprites.umbrella.addEventListener("load", ImageLoaded);
+                sprites.visor.addEventListener("load", ImageLoaded);
+                sprites.sunglasses.addEventListener("load", ImageLoaded);
+                sprites.keys.addEventListener("load", ImageLoaded);
+                sprites.glove.addEventListener("load", ImageLoaded);
+                sprites.shoes.addEventListener("load", ImageLoaded);
+
                 sprites.umbrella.src    = 'sprites/umbrella.png';
                 sprites.visor.src       = 'sprites/visor.png';
                 sprites.sunglasses.src  = 'sprites/sunglasses.png';
                 sprites.keys.src        = 'sprites/keys.png';
                 sprites.glove.src       = 'sprites/glove.png';
                 sprites.shoes.src       = 'sprites/shoes.png';
+
+                for (var image in sprites)
+                {
+                    numImages++;
+                }
             }
 
+            function ImageLoaded()
+            {
+                imagesLoaded++;
+                if (imagesLoaded == numImages)
+                {
+                    SpawnIn();
+                    Update();
+                }
+            }
             //update and redraw
             function Update()
             {
@@ -779,7 +832,6 @@ window.addEventListener("load", RunGame);
                 {
                     //draw static UI elements
 
-                    //context.drawImage(sprites.gametitle, 0, 0);
                     context.drawImage(sprites.rucksack, 25, 100);
                     context.drawImage(sprites.box, 50, 650);
                     
@@ -846,9 +898,4 @@ window.addEventListener("load", RunGame);
 
             //load the assets
             Load();
-            //spawn a set of 3 random items
-            SpawnIn();
-            //initial kick to set up the update loop
-            Update();
-
         }

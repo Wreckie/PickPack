@@ -319,13 +319,13 @@ window.addEventListener("load", RunGame);
                         buttons[0].hovered = false;
                         buttons[1].hovered = false;
                         scaleFactor = window.innerWidth / GAME_WIDTH;
-                        //where the mouse was clicked
+                        //where the mouse is
                         var mouseX = event.pageX;
                         var mouseY = event.pageY;
                         //iterate through the buttons and see if we're hovering on any of them
                         var minX = 985 * scaleFactor;
                         var maxX = minX + (181 * scaleFactor);
-                        //if the click was within these bounds, check vertically
+                        //if the mouse is within these bounds, check vertically
                         if (mouseX >= minX && mouseX <= maxX)
                         {
                             for (var i = 0; i < 2; i++)
@@ -333,11 +333,35 @@ window.addEventListener("load", RunGame);
                                 //calculate where in the game space the button starts (vertically) and stops. all buttons are the same height
                                 var minY = buttons[i].y * scaleFactor;
                                 var maxY = minY + (76 * scaleFactor);
-                                //if the click was within these bounds, then we are hovering over a button
+                                //if the mouse is within these bounds, then we are hovering over a button
                                 if (mouseY >= minY && mouseY <= maxY)
                                 {
                                     buttons[i].hovered = true;
                                 }
+                            }
+                        }
+
+                        //check that the mouse is within the x-bounds to collide
+                        var minX = 866 * scaleFactor;
+                        var maxX = minX + (300 * scaleFactor);
+                        if (mouseX >= minX && mouseX <= maxX)
+                        {
+                            //then check if y is between the bounds for the flip button
+                            var minY = 46 * scaleFactor;
+                            var maxY = minY + (250 * scaleFactor);                                
+
+                            if (mouseY >= minY && mouseY <= maxY)
+                            {
+                                Flip();
+                            }
+
+                            //then the rotate button
+                            minY += (300 * scaleFactor);
+                            maxY += (300 * scaleFactor);
+
+                            if (mouseY >= minY && mouseY <= maxY)
+                            {
+                               Rotate();
                             }
                         }
                     }
@@ -393,13 +417,6 @@ window.addEventListener("load", RunGame);
     	                    clickedItem.x = clickedItemInitX;
     	                    clickedItem.y = clickedItemInitY;
                             UpdateTiles();
-                            //we should also check if we are on a flip/rotate button
-                            scaleFactor = window.innerWidth / GAME_WIDTH;
-                            var mouseX = event.pageX;
-                            var mouseY = event.pageY;
-                            var minX = 966 * scaleFactor;
-                            var maxX = minX + (300 * scaleFactor);
-
                     	}
                         //otherwise we can drop it
                         else
@@ -434,6 +451,17 @@ window.addEventListener("load", RunGame);
                     }
                 }
             }
+
+            function Flip()
+            {
+                //console.log("Flip");
+            }
+
+            function Rotate()
+            {
+                //console.log("Rotate")
+            }
+
             function UpdateTiles()
             {
                 for (var i = 0; i < 84; i++)

@@ -44,6 +44,8 @@ window.addEventListener("load", RunGame);
             var itemNames = ["ball", "ballpackm", "ballpackl", "teepack", "teebag", "scorecards", "waterbottles", "waterbottlel", "banana", "orange", "bar", "sandwich", "umbrella", "visor", "sunglasses", "keys", "glove", "shoes"];
             //array to hold the values of the items for scoring purposes
             var itemValues = [1, 6, 15, 3, 10, 6, 3, 14, 6, 6, 4, 25, 10, 19, 8, 3, 18, 26];
+            //array to hold the layer values of items
+            var itemLayers = [0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 2, 2, 2, 2, 1, 2, 2];
 
             //array to hold the tile data for each item
             var itemTileData = [CreateTileData(1, 1), CreateTileData(2, 2), CreateTileData(3, 3), CreateTileData(1, 2), CreateTileData(2, 3), CreateTileData(2, 2), CreateTileData(2, 1), CreateTileData(4, 2), CreateTileData(3, 2, [[0, 0],[1, 0]]), CreateTileData(2, 2), CreateTileData(1, 3), CreateTileData(4, 5, [[0, 0],[1, 0],[0, 3],[0, 4],[3, 4]]), CreateTileData(2, 5, [[0, 0],[1, 3],[1, 4]]), CreateTileData(3, 5, [[0, 0],[0, 4],[2, 0]]), CreateTileData(2, 4, [[0, 0],[0, 1]]), CreateTileData(2, 2, [[0, 0]]), CreateTileData(5, 3, [[0, 2],[1, 2],[3, 2],[4, 2]]), CreateTileData(4, 6, [[0, 0],[0, 4],[0, 5],[1, 5],[3, 0]])];
@@ -108,7 +110,7 @@ window.addEventListener("load", RunGame);
                 }
             }
             //PackItem class, instantiated every time a new object is spawned
-            function PackItem(name, value, category, tileData, x, y)
+            function PackItem(name, value, category, tileData, layer, x, y)
             {
                 //name of item (used for bonus calculation)
                 this.name = name;
@@ -125,6 +127,10 @@ window.addEventListener("load", RunGame);
                 this.tileData = tileData;
                 //whether the item is in the bag or not
                 this.inBag  = false;
+                //layer properties for overlapping issues.  0 means the item is rectangular, 1 is a small item with a hole, 2 is large items with holes
+                this.layer = layer;
+                //property only set to true for the last clicked item - ensures the currently selected item will always be drawn last (on top of everything else)
+                this.drawLast = false;
 
                 //reference to the image object
                 var sprite   = sprites[name];
@@ -195,33 +201,47 @@ window.addEventListener("load", RunGame);
                     var mouseX = event.pageX;
                     var mouseY = event.pageY;
                     //iterate through all our clickables and see if we clicked any of them
-                    var numItems = visibleItems.length;
-                    for (var i = 0; i < numItems; i++)
+                    var numItems = visibleItems.length;   
+                    //first look for layer 2 items, then layer 1, then layer 0.  only the item with the smallest layer number will be selected
+                    for (var j = 2; j >= 0; j--)
                     {
-                        //calculate where in the game space the item starts being drawn (horizontally) and stops
-                        var minX = visibleItems[i].x * scaleFactor;
-                        var maxX = minX + (visibleItems[i].width * scaleFactor);
-                        //if the click was within these bounds, check vertically
-                        if (mouseX >= minX && mouseX <= maxX)
+                        for (var i = 0; i < numItems; i++)
                         {
-                            //calculate where in the game space the item starts being drawn (vertically) and stops
-                            var minY = visibleItems[i].y * scaleFactor;
-                            var maxY = minY + (visibleItems[i].height * scaleFactor);
-                            //if the click was within these bounds, then we have clicked on an item
-                            if (mouseY >= minY && mouseY <= maxY)
+                            if (visibleItems[i].layer == j)
                             {
-                                //set the bool to true
-                                itemClicked = true;
-                                //store a reference to the clicked item
-                                clickedItem = visibleItems[i];
-                                //break the loop, this ensures we can only click one item at a time and don't waste time on unnecessary iterations
-                                break;
+                                //calculate where in the game space the item starts being drawn (horizontally) and stops
+                                var minX = visibleItems[i].x * scaleFactor;
+                                var maxX = minX + (visibleItems[i].width * scaleFactor);
+                                //if the click was within these bounds, check vertically
+                                if (mouseX >= minX && mouseX <= maxX)
+                                {
+                                    //calculate where in the game space the item starts being drawn (vertically) and stops
+                                    var minY = visibleItems[i].y * scaleFactor;
+                                    var maxY = minY + (visibleItems[i].height * scaleFactor);
+                                    //if the click was within these bounds, then we have clicked on an item
+                                    if (mouseY >= minY && mouseY <= maxY)
+                                    {
+                                        //set the bool to true
+                                        itemClicked = true;
+                                        //store a reference to the clicked item
+                                        clickedItem = visibleItems[i];
+                                        //break the loop, this ensures we can only click one item at a time and don't waste time on unnecessary iterations
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
                     //if we have clicked an item, we must calculate its offset so it can follow the mouse nicely
                     if (itemClicked)
                     {
+                        //set all items drawLast property to false so only one is true at a time
+                        for (var i = 0; i < numItems; i++)
+                        {
+                            visibleItems[i].drawLast = false;
+                        }
+                        //update the drawLast property so the clicked item is always drawn on top
+                        clickedItem.drawLast = true;
                     	//record the initial position of the item
                     	clickedItemInitX = clickedItem.x;
                     	clickedItemInitY = clickedItem.y;
@@ -500,9 +520,9 @@ window.addEventListener("load", RunGame);
                 //now we have three distinct random numbers
                 //create each one as a PackItem object so they can be drawn in a line
                 //position them so they draw in the middle of their respective item boxes so they look neat
-                visibleItems.push(new PackItem(itemNames[rand1], itemValues[rand1], Math.floor(rand1 / 6), itemTileData[rand1], slotX - (sprites[itemNames[rand1]].width / 2), slotY - (sprites[itemNames[rand1]].height / 2)));
-                visibleItems.push(new PackItem(itemNames[rand2], itemValues[rand2], Math.floor(rand2 / 6), itemTileData[rand2], (slotX + slotWidth) - (sprites[itemNames[rand2]].width / 2), slotY - (sprites[itemNames[rand2]].height / 2)));
-                visibleItems.push(new PackItem(itemNames[rand3], itemValues[rand3], Math.floor(rand3 / 6), itemTileData[rand3], (slotX + (2 * slotWidth)) - (sprites[itemNames[rand3]].width / 2), slotY - (sprites[itemNames[rand3]].height / 2)));
+                visibleItems.push(new PackItem(itemNames[rand1], itemValues[rand1], Math.floor(rand1 / 6), itemTileData[rand1], itemLayers[rand1], slotX - (sprites[itemNames[rand1]].width / 2), slotY - (sprites[itemNames[rand1]].height / 2)));
+                visibleItems.push(new PackItem(itemNames[rand2], itemValues[rand2], Math.floor(rand2 / 6), itemTileData[rand2], itemLayers[rand2], (slotX + slotWidth) - (sprites[itemNames[rand2]].width / 2), slotY - (sprites[itemNames[rand2]].height / 2)));
+                visibleItems.push(new PackItem(itemNames[rand3], itemValues[rand3], Math.floor(rand3 / 6), itemTileData[rand3], itemLayers[rand3], (slotX + (2 * slotWidth)) - (sprites[itemNames[rand3]].width / 2), slotY - (sprites[itemNames[rand3]].height / 2)));
             }
 
             function SkipItems()
@@ -869,10 +889,19 @@ window.addEventListener("load", RunGame);
 
                     //draw all the visible pack items onto the canvas
                     var numVis = visibleItems.length;
+                    var ind = 0;
                     for (var i = 0; i < numVis; i++)
                     {
+                        //do not draw the currently selected item until everything else is drawn
+                        if (visibleItems[i].drawLast)
+                        {
+                            var ind = i;
+                            continue;
+                        }
                         visibleItems[i].Draw();
                     }
+                    //draw the currently selected item
+                    visibleItems[ind].Draw();
                 }
                 //otherwise draw the game over screen
                 else

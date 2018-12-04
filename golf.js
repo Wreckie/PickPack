@@ -387,12 +387,19 @@ window.addEventListener("load", RunGame);
                             dropHere = false;
                         }
 
-                        //if we can't drop the item at the current position, put it back where we found it and re-cover the tiles it was on
+                        //if we can't drop the item at the current position, we need to put it back where it came from and update the tiles
                        	if (!dropHere)
                        	{
     	                    clickedItem.x = clickedItemInitX;
     	                    clickedItem.y = clickedItemInitY;
                             UpdateTiles();
+                            //we should also check if we are on a flip/rotate button
+                            scaleFactor = window.innerWidth / GAME_WIDTH;
+                            var mouseX = event.pageX;
+                            var mouseY = event.pageY;
+                            var minX = 966 * scaleFactor;
+                            var maxX = minX + (300 * scaleFactor);
+
                     	}
                         //otherwise we can drop it
                         else
@@ -724,6 +731,8 @@ window.addEventListener("load", RunGame);
                 sprites.endgameU        = new Image();
                 sprites.endgameH        = new Image();
                 sprites.gameover        = new Image();
+                sprites.flipbutton      = new Image();
+                sprites.rotatebutton    = new Image();
 
                 sprites.rucksack.addEventListener("load", ImageLoaded);
                 sprites.box.addEventListener("load", ImageLoaded);             
@@ -734,7 +743,9 @@ window.addEventListener("load", RunGame);
                 sprites.skipitemsH.addEventListener("load", ImageLoaded);      
                 sprites.endgameU.addEventListener("load", ImageLoaded);        
                 sprites.endgameH.addEventListener("load", ImageLoaded);        
-                sprites.gameover.addEventListener("load", ImageLoaded);        
+                sprites.gameover.addEventListener("load", ImageLoaded);
+                sprites.flipbutton.addEventListener("load", ImageLoaded);
+                sprites.rotatebutton.addEventListener("load", ImageLoaded);
 
                 sprites.rucksack.src        = 'sprites/rucksack.png';
                 sprites.box.src             = 'sprites/box.png';
@@ -746,7 +757,8 @@ window.addEventListener("load", RunGame);
                 sprites.endgameU.src        = 'sprites/EndButtonU.png';
                 sprites.endgameH.src        = 'sprites/EndButtonH.png';
                 sprites.gameover.src        = 'sprites/gameover.png';
-
+                sprites.flipbutton.src      = 'sprites/FlipButton.png';
+                sprites.rotatebutton.src    = 'sprites/RotateButton.png';
 
                 //tiles
                 sprites.tileU = new Image();
@@ -855,6 +867,9 @@ window.addEventListener("load", RunGame);
                     context.drawImage(sprites.rucksack, 25, 100);
                     context.drawImage(sprites.box, 50, 650);
                     
+                    context.drawImage(sprites.flipbutton, 866, 46);
+                    context.drawImage(sprites.rotatebutton, 866, 346);
+
                     for (var i = 0; i < 2; i++)
                     {
                         buttons[i].Draw();

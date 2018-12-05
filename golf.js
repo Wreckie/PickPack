@@ -21,6 +21,15 @@ window.addEventListener("load", RunGame);
             canvas.addEventListener("mouseup", OnRelease);
             canvas.addEventListener("mousemove", OnMove);
 
+            //timers
+            var flipTimer;
+            var rotateTimer;
+
+            var flipping = false;
+            var rotating = false;
+            var alreadyFlipping = false;
+            var alreadyRotating = false;
+
             //array to store tiles
             var tiles = [];
             //bag dimensions and position
@@ -276,9 +285,56 @@ window.addEventListener("load", RunGame);
                 {
                     if (itemClicked)
                     {
+                        var buttonHover = false;
+                        //we have an item, are we hovering over a transform button?
+                        //check that the mouse is within the x-bounds to collide
+                        var mouseX = event.pageX;
+                        var mouseY = event.pageY;
+                        var minX = 866 * scaleFactor;
+                        var maxX = minX + (300 * scaleFactor);
+                        if (mouseX >= minX && mouseX <= maxX)
+                        {
+                            //then check if y is between the bounds for the flip button
+                            var flipMinY = 46 * scaleFactor;
+                            var flipMaxY = flipMinY + (250 * scaleFactor);                                
+                            var rotMinY = 346 * scaleFactor;
+                            var rotMaxY = rotMinY + (250 * scaleFactor); 
+                            if (mouseY >= flipMinY && mouseY <= flipMaxY)
+                            {
+                                alreadyRotating = false;
+                                buttonHover = true;
+                                if (!alreadyFlipping)
+                                {
+                                    StartFlipTimer();
+                                }
+                            }
+                            else if (mouseY >= rotMinY && mouseY <= rotMaxY)
+                            {
+                                alreadyFlipping = false;
+                                buttonHover = true;
+                                if (!alreadyRotating)
+                                {
+                                    StartRotateTimer();
+                                }
+                            }
+                        }
+                        if (!buttonHover)
+                        {
+                            if (alreadyFlipping)
+                            {
+                                alreadyFlipping = false;
+                                clearTimeout(flipTimer);
+                            }
+                            if (alreadyRotating)
+                            {
+                                alreadyRotating = false;
+                                clearTimeout(rotateTimer);
+                            }
+                        }
+
                         //calculate the new position of the item, factoring in the offset
-                        var unsnappedX = (event.pageX / scaleFactor) - clickOffsetX;
-                        var unsnappedY = (event.pageY / scaleFactor) - clickOffsetY; 
+                        var unsnappedX = (mouseX / scaleFactor) - clickOffsetX;
+                        var unsnappedY = (mouseY / scaleFactor) - clickOffsetY; 
 
                         //now snap it to the 50x50 grid
                         var xDiff = unsnappedX % 50;
@@ -338,30 +394,6 @@ window.addEventListener("load", RunGame);
                                 {
                                     buttons[i].hovered = true;
                                 }
-                            }
-                        }
-
-                        //check that the mouse is within the x-bounds to collide
-                        var minX = 866 * scaleFactor;
-                        var maxX = minX + (300 * scaleFactor);
-                        if (mouseX >= minX && mouseX <= maxX)
-                        {
-                            //then check if y is between the bounds for the flip button
-                            var minY = 46 * scaleFactor;
-                            var maxY = minY + (250 * scaleFactor);                                
-
-                            if (mouseY >= minY && mouseY <= maxY)
-                            {
-                                Flip();
-                            }
-
-                            //then the rotate button
-                            minY += (300 * scaleFactor);
-                            maxY += (300 * scaleFactor);
-
-                            if (mouseY >= minY && mouseY <= maxY)
-                            {
-                               Rotate();
                             }
                         }
                     }
@@ -452,14 +484,28 @@ window.addEventListener("load", RunGame);
                 }
             }
 
-            function Flip()
+            function StartFlipTimer()
             {
-                //console.log("Flip");
+                flipTimer = setTimeout(FlipItem, 1500);
+                alreadyFlipping = true;
             }
 
-            function Rotate()
+            function StartRotateTimer()
             {
-                //console.log("Rotate")
+                rotateTimer = setTimeout(RotateItem, 1500);
+                alreadyRotating = true;
+            }
+
+            function FlipItem()
+            {
+                console.log("flip");
+                alreadyFlipping = false;
+            }
+
+            function RotateItem()
+            {
+                console.log("rotate");
+                alreadyRotating = false;
             }
 
             function UpdateTiles()
@@ -622,6 +668,10 @@ window.addEventListener("load", RunGame);
                     {
                         foodScore += itemValue;
                     }
+                    if (itemName == "bar")
+                    {
+                        foodScore += itemValue;
+                    }
                     if (itemName == "sunglasses")
                     {
                         bonusEarnedArray[11] = true;
@@ -775,7 +825,7 @@ window.addEventListener("load", RunGame);
                 sprites.flipbutton.addEventListener("load", ImageLoaded);
                 sprites.rotatebutton.addEventListener("load", ImageLoaded);
 
-                sprites.rucksack.src        = 'sprites/rucksack.png';
+                sprites["rucksack"].src        = 'sprites/rucksack.png';
                 sprites.box.src             = 'sprites/box.png';
                 sprites.equipmentbar.src    = 'sprites/EquipmentBar.png';
                 sprites.accessoriesbar.src  = 'sprites/AccessoriesBar.png';
@@ -801,71 +851,36 @@ window.addEventListener("load", RunGame);
                 sprites.tileC.src = 'sprites/tileC.png';
                 sprites.tileD.src = 'sprites/tileD.png';
                 
+                //for each sprite we are loading 8 separate images in for its rotations and flips
+
                 //equipment items
-                sprites.ball        = new Image();
-                sprites.ballpackm   = new Image();
-                sprites.ballpackl   = new Image();
-                sprites.teepack     = new Image();
-                sprites.teebag      = new Image();
-                sprites.scorecards  = new Image();
 
-                sprites.ball.addEventListener("load", ImageLoaded);
-                sprites.ballpackm.addEventListener("load", ImageLoaded);
-                sprites.ballpackl.addEventListener("load", ImageLoaded);
-                sprites.teepack.addEventListener("load", ImageLoaded);
-                sprites.teebag.addEventListener("load", ImageLoaded);
-                sprites.scorecards.addEventListener("load", ImageLoaded);
-
-                sprites.ball.src        = 'sprites/ball.png';
-                sprites.ballpackm.src   = 'sprites/ballpackm.png';
-                sprites.ballpackl.src   = 'sprites/ballpackl.png';
-                sprites.teepack.src     = 'sprites/teepack.png'
-                sprites.teebag.src      = 'sprites/teebag.png';
-                sprites.scorecards.src  = 'sprites/scorecards.png';
-
-                //supply items
-                sprites.waterbottles    = new Image();
-                sprites.waterbottlel    = new Image();
-                sprites.banana          = new Image();
-                sprites.orange          = new Image();
-                sprites.bar             = new Image();
-                sprites.sandwich        = new Image();
-
-                sprites.waterbottles.addEventListener("load", ImageLoaded);
-                sprites.waterbottlel.addEventListener("load", ImageLoaded);
-                sprites.banana.addEventListener("load", ImageLoaded);
-                sprites.orange.addEventListener("load", ImageLoaded);
-                sprites.bar.addEventListener("load", ImageLoaded);
-                sprites.sandwich.addEventListener("load", ImageLoaded);
-
-                sprites.waterbottles.src    = 'sprites/waterbottles.png';
-                sprites.waterbottlel.src    = 'sprites/waterbottlel.png';
-                sprites.banana.src          = 'sprites/banana.png';
-                sprites.orange.src          = 'sprites/orange.png';
-                sprites.bar.src             = 'sprites/bar.png';
-                sprites.sandwich.src        = 'sprites/sandwich.png';
-
-                //accessory items
-                sprites.umbrella    = new Image();
-                sprites.visor       = new Image();
-                sprites.sunglasses  = new Image();
-                sprites.keys        = new Image();
-                sprites.glove       = new Image();
-                sprites.shoes       = new Image();
-
-                sprites.umbrella.addEventListener("load", ImageLoaded);
-                sprites.visor.addEventListener("load", ImageLoaded);
-                sprites.sunglasses.addEventListener("load", ImageLoaded);
-                sprites.keys.addEventListener("load", ImageLoaded);
-                sprites.glove.addEventListener("load", ImageLoaded);
-                sprites.shoes.addEventListener("load", ImageLoaded);
-
-                sprites.umbrella.src    = 'sprites/umbrella.png';
-                sprites.visor.src       = 'sprites/visor.png';
-                sprites.sunglasses.src  = 'sprites/sunglasses.png';
-                sprites.keys.src        = 'sprites/keys.png';
-                sprites.glove.src       = 'sprites/glove.png';
-                sprites.shoes.src       = 'sprites/shoes.png';
+                for (var i = 0; i < 18; i++)
+                {
+                    for (var j = 0; j < 8; j++)
+                    {
+                        var imgName = itemNames[i];
+                        switch(j % 4)
+                        {
+                            case 1:
+                                imgName += "90";
+                                break;
+                            case 2:
+                                imgName += "180";
+                                break;
+                            case 3:
+                                imgName += "270";
+                                break;
+                        }
+                        if (j > 3)
+                        {
+                            imgName += "F";
+                        }
+                        sprites[imgName] = new Image();
+                        sprites[imgName].addEventListener("load", ImageLoaded);
+                        sprites[imgName].src = 'sprites/' + imgName + ".png";
+                    }
+                }
 
                 for (var image in sprites)
                 {
